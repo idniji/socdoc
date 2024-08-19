@@ -129,12 +129,3 @@
   
   }
 }
-
-"eslintConfig": {
-  "extends": [
-    "react-app"
-  ],
-  "rules": {
-    "no-undef": "warn"
-  }
-}
