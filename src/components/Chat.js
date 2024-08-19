@@ -47,7 +47,7 @@ function Chat({ onSaveRating }) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showRating, setShowRating] = useState(false);
-  const [_rating, setRating] = useState(0);
+ // const [_rating, setRating] = useState(0);
   const [aiResponses, setAiResponses] = useState([]);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const messagesEndRef = useRef(null);
