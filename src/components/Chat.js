@@ -18,24 +18,23 @@ const systemPrompts = {
 - "나도 그랬어"처럼 공감을 자주 표현해.
 - 상대방 입장에서 생각하고 감정에 대해 물어봐줘.
 - "많이 힘들었겠다", "넌 정말 대단해" 같은 말로 격려해줘.
-넌 따뜻한 태양 같은 친구야. 이 역할에 맞게 짧고 친근하게 대답해줘.`,
+- 감정을 나타내는 이모지를 적절히 사용해 (예: 😊, 🤗, 💖)`,
 
   이성이: `${commonInstructions}
 당신은 '이성이'라는 이름의 AI 친구입니다. 현실적인 조언과 객관적인 의견을 제시해주세요.
 - 상황을 객관적으로 판단하고 제3자 입장에서 의견을 말해줘.
 - 다양한 관점을 고려해서 현실적인 조언을 해줘.
-넌 믿음직한 돌mentary 같은 친구야. 이 역할에 맞게 짧고 친근하게 대답해줘.`,
+- 논리적인 분석을 바탕으로 한 의견을 제시해.`,
 
   질문이: `${commonInstructions}
 당신은 '질문이'라는 이름의 AI 친구입니다. 사용자가 스스로 생각할 수 있게 도와주세요.
 - "그렇구나"라고 말하며 경청하는 자세를 보여줘.
-- 해결책을 직접 주지 말고, 상대방이 스스로 생각하게 만드는 질문을 해봐.
--넌 거울처럼 생각을 반영해주는 친구야. 이 역할에 맞게 짧고 친근하게 대답해줘.`,
+- 해결책을 직접 주지 말고, 상대방이 스스로 생각하게 만드는 열린 질문을 사용해.`,
 
   비판이: `${commonInstructions}
 당신은 '비판이'라는 이름의 AI 친구입니다. 문제점을 지적하고 개선 방향을 제시해주세요.
 당신은 '비판이'라는 이름의 AI 친구입니다. 문제점을 지적하고 개선 방향을 제시해주세요.
-- 시크하게 문제점을 지적해줘.
+- 날카로운 칼날처럼 시크하게 문제점을 지적해줘.
 - 기본적으로 비판적 태도를 가지고 말해주되, 애정을 기반으로 해줘.`
 };
 
@@ -89,48 +88,48 @@ function Chat({ onSaveRating }) {
     setAiResponses(responses);
   };
 
-  const handleSendMessage = async () => {
-    if (input.trim() === '') return;
-    
-    const userMessage = { text: input, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+const handleSendMessage = async () => {
+  if (input.trim() === '') return;
+  
+  const userMessage = { text: input, sender: 'user' };
+  setMessages(prev => [...prev, userMessage]);
+  setInput('');
 
-    if (!selectedCharacter) {
-      await generateAIResponses(input);
-    } else {
-      setIsLoading(true);
-      try {
-        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-          model: "gpt-4o-mini",
-          messages: [
-            {"role": "system", "content": systemPrompts[selectedCharacter]},
-            ...messages.map(msg => ({
-              "role": msg.sender === 'user' ? "user" : "assistant",
-              "content": msg.text
-            })),
-            {"role": "user", "content": `사용자의 메시지: "${input}"\n\n위 메시지에 대해 당신의 역할에 맞게 응답해주세요. 반드시 주어진 지침을 따라 응답해야 합니다.`}
-          ],
-          temperature: 0.7,
-          max_tokens: 150
-        }, {
-          headers: {
-            'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-            'Content-Type': 'application/json'
-          }
-        });
+  if (!selectedCharacter) {
+    await generateAIResponses(input);
+  } else {
+    setIsLoading(true);
+    try {
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-4o-mini",
+        messages: [
+          {"role": "system", "content": systemPrompts[selectedCharacter]},
+          ...messages.map(msg => ({
+            "role": msg.sender === 'user' ? "user" : "assistant",
+            "content": msg.text
+          })),
+          {"role": "user", "content": input}
+        ],
+        temperature: 0.8,  // 약간 높여서 더 다양한 응답을 유도
+        max_tokens: 150
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-        const botMessage = { text: response.data.choices[0].message.content, sender: 'bot', character: selectedCharacter };
-        setMessages(prev => [...prev, botMessage]);
-      } catch (error) {
-        console.error('Error:', error);
-        setMessages(prev => [...prev, { 
-          text: `오류가 발생했습니다: ${error.message}`, 
-          sender: 'bot',
-          character: selectedCharacter
-        }]);
-      }
-      setIsLoading(false);
+      const botMessage = { text: response.data.choices[0].message.content, sender: 'bot', character: selectedCharacter };
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages(prev => [...prev, { 
+        text: `오류가 발생했습니다: ${error.message}`, 
+        sender: 'bot',
+        character: selectedCharacter
+      }]);
+    }
+    setIsLoading(false);
     }
   };
 
